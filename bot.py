@@ -73,7 +73,7 @@ async def generate_dm_message():
                        f"**Last Heartbeat:**      {heartbeat_time}\n" \
                        f"**Uptime:** {uptime_hours:.2f}h\n" \
                        f"-----------------------------------------------\n" \
-                       f"**Invite Link:** {invite_link}\n" \
+                       f"[**Bot Invite Link**]({invite_link})\n" \
                        f"-----------------------------------------------"
     return message_template
 
