@@ -69,19 +69,27 @@ class chatGPTCog(commands.Cog):
         if message.author.bot:
             return
         
-        # チャットチャンネルかつコマンドでなければ
+        # DMchannel なら無視
+        if isinstance(message.channel, discord.DMChannel):
+            return
+        # チャットチャンネルでなければ無視
         topic = message.channel.topic
-        if topic is not None and CHAT_CHANNEL_KEY in topic and not message.content.startswith(PREFIX):
-            # 書き込み中ステータスに変更
-            async with message.channel.typing():
-                # Chatbot による返答を取得
-                response = await self.generate_response(message.content)
-                # 2000 文字を超えていた場合は Embed で返信
-                if len(response) > 2000:
-                    embed = discord.Embed(title="Response", description=response, color=0xf1c40f)
-                    await message.channel.send(embed=embed)
-                else:
-                    await message.channel.send(response)
+        if topic is None or CHAT_CHANNEL_KEY not in topic:  # トピックがないか、キーが含まれていない
+            return
+        # コマンドなら無視
+        if message.content.startswith(PREFIX):
+            return
+        
+        # 書き込み中ステータスに変更
+        async with message.channel.typing():
+            # Chatbot による返答を取得
+            response = await self.generate_response(message.content)
+            # 2000 文字を超えていた場合は Embed で返信
+            if len(response) > 2000:
+                embed = discord.Embed(title="Response", description=response, color=0xf1c40f)
+                await message.channel.send(embed=embed)
+            else:
+                await message.channel.send(response)
 
     # リセット
     @commands.hybrid_command()
