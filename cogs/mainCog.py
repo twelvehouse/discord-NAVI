@@ -22,8 +22,8 @@ class MainCog(commands.Cog):
         """
         show current cog list
         """
-        loaded_cogs = [cog for cog in self.bot.cogs]
-        await ctx.reply(f"Loaded cogs: {', '.join(loaded_cogs)}")
+        cog_list = [f"- {cog}" for cog in self.bot.cogs]
+        await ctx.reply(f"Loaded cogs\n{chr(10).join(cog_list)}")
 
     # メッセージ削除
     @commands.hybrid_command()
