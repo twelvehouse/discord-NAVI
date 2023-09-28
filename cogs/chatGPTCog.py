@@ -82,14 +82,21 @@ class chatGPTCog(commands.Cog):
         
         # 書き込み中ステータスに変更
         async with message.channel.typing():
-            # Chatbot による返答を取得
-            response = await self.generate_response(message.content)
-            # 2000 文字を超えていた場合は Embed で返信
-            if len(response) > 2000:
-                embed = discord.Embed(title="Response", description=response, color=0xf1c40f)
+            # Chatbot による返答の取得を試みる
+            try:
+                # 取得
+                response = await self.generate_response(message.content)
+                # 2000 文字を超えていた場合は Embed で返信
+                if len(response) > 2000:
+                    embed = discord.Embed(title="Response", description=response, color=0xf1c40f)
+                    await message.channel.send(embed=embed)
+                else:
+                    await message.channel.send(response)
+            except Exception as e:
+                # エラーが発生した場合はエラーを返信する
+                error_msg = f"```json\n" + f"{e}\n```"
+                embed = discord.Embed(title="Error", description=error_msg, color=0xe74c3c)
                 await message.channel.send(embed=embed)
-            else:
-                await message.channel.send(response)
 
     # リセット
     @commands.hybrid_command()
