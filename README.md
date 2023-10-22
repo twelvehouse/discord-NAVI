@@ -4,7 +4,12 @@ Discord chatbot for personal use.[^1]
 ___lets all love lain___
 
 ## Features
-- Chat with revChatGPT.V1
+- easily set up a chatbot-only channel using the channel topic
+- because it uses conversation_id, the conversation will continue even if the BOT is restarted
+- `reset` command can be used to restore the effect of custom instructions
+- with heartbeat function to check if BOT is still running (in DM)
+- access_token and conversation_id can be updated at any time from the command
+
 
 ## How to use
 1. install requirements `pip install -R requirements.txt`
