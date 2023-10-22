@@ -104,8 +104,20 @@ class chatGPTCog(commands.Cog):
         """
         Reset Chatbot
         """
-        # chatbot の再初期化
-        self.chatbot = self.get_chatbot()
+        # 会話をリセットして、古い会話を削除する
+        self.chatbot.reset_chat()
+        await self.chatbot.delete_conversation(read_config()['CHATGPT']['conversation_id'])
+
+        # 新しく会話を開始して、conversation_id を更新する
+        await self.generate_response("hello")
+        conversation_id = self.chatbot.conversation_id  # 新しい conversation_id を取得
+        await self.chatbot.change_title(conversation_id, "NAVI chat")   # 会話のタイトルを変更
+        print(f"new conversation_id: {conversation_id}")
+        # config を更新する
+        config = read_config()
+        config['CHATGPT']['conversation_id'] = conversation_id
+        write_config(config)
+
         await ctx.reply("Chatbot has been reset.")
 
     # token を更新する
