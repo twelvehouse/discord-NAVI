@@ -102,7 +102,7 @@ class chatGPTCog(commands.Cog):
     @commands.hybrid_command()
     async def reset(self, ctx):
         """
-        Reset Chatbot
+        Reset Conversation
         """
         # 会話をリセットして、古い会話を削除する
         self.chatbot.reset_chat()
@@ -118,7 +118,7 @@ class chatGPTCog(commands.Cog):
         config['CHATGPT']['conversation_id'] = conversation_id
         write_config(config)
 
-        await ctx.reply("Chatbot has been reset.")
+        await ctx.reply("Conversation has been reset.")
 
     # token を更新する
     @commands.hybrid_command()
