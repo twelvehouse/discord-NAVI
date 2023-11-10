@@ -104,26 +104,34 @@ class chatGPTCog(commands.Cog):
         """
         Reset Conversation
         """
-        # 会話をリセットして、古い会話を削除する
-        self.chatbot.reset_chat()
-        # 削除を試みる、できなくても何もしない
-        try:
-            await self.chatbot.delete_conversation(read_config()['CHATGPT']['conversation_id'])
-        except:
-            print(f"conversation_id: {read_config()['CHATGPT']['conversation_id']} is not found.")
-            pass
+        # thinking にする
+        async with ctx.typing():
+            try:
+                # 会話をリセットして、古い会話を削除する
+                self.chatbot.reset_chat()
+                # 削除を試みる、できなくても何もしない
+                try:
+                    await self.chatbot.delete_conversation(read_config()['CHATGPT']['conversation_id'])
+                except:
+                    print(f"conversation_id: {read_config()['CHATGPT']['conversation_id']} is not found.")
+                    pass
 
-        # 新しく会話を開始して、conversation_id を更新する
-        await self.generate_response("hello")
-        conversation_id = self.chatbot.conversation_id  # 新しい conversation_id を取得
-        await self.chatbot.change_title(conversation_id, "NAVI chat")   # 会話のタイトルを変更
-        print(f"new conversation_id: {conversation_id}")
-        # config を更新する
-        config = read_config()
-        config['CHATGPT']['conversation_id'] = conversation_id
-        write_config(config)
+                # 新しく会話を開始して、conversation_id を更新する
+                await self.generate_response("hello")
+                conversation_id = self.chatbot.conversation_id  # 新しい conversation_id を取得
+                await self.chatbot.change_title(conversation_id, "NAVI chat")   # 会話のタイトルを変更
+                print(f"new conversation_id: {conversation_id}")
+                # config を更新する
+                config = read_config()
+                config['CHATGPT']['conversation_id'] = conversation_id
+                write_config(config)
 
-        await ctx.reply("Conversation has been reset.")
+                await ctx.reply("Conversation has been reset.")
+            except Exception as e:
+                # エラーが発生した場合はエラーを返信する
+                error_msg = f"```json\n" + f"{e}\n```"
+                embed = discord.Embed(title="Error", description=error_msg, color=0xe74c3c)
+                await ctx.reply(embed=embed)
 
     # token を更新する
     @commands.hybrid_command()
