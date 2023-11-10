@@ -117,7 +117,8 @@ class chatGPTCog(commands.Cog):
                     pass
 
                 # 新しく会話を開始して、conversation_id を更新する
-                await self.generate_response("hello")
+                init_prompt = read_config()['CHATGPT']['init_prompt'] # 初期プロンプトを取得
+                await self.generate_response(init_prompt)
                 conversation_id = self.chatbot.conversation_id  # 新しい conversation_id を取得
                 await self.chatbot.change_title(conversation_id, "NAVI chat")   # 会話のタイトルを変更
                 print(f"new conversation_id: {conversation_id}")
