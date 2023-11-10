@@ -106,7 +106,12 @@ class chatGPTCog(commands.Cog):
         """
         # 会話をリセットして、古い会話を削除する
         self.chatbot.reset_chat()
-        await self.chatbot.delete_conversation(read_config()['CHATGPT']['conversation_id'])
+        # 削除を試みる、できなくても何もしない
+        try:
+            await self.chatbot.delete_conversation(read_config()['CHATGPT']['conversation_id'])
+        except:
+            print(f"conversation_id: {read_config()['CHATGPT']['conversation_id']} is not found.")
+            pass
 
         # 新しく会話を開始して、conversation_id を更新する
         await self.generate_response("hello")
@@ -149,7 +154,7 @@ class chatGPTCog(commands.Cog):
         # chatbot の再初期化
         self.chatbot = self.get_chatbot()
         await ctx.reply("Chatbot conversation_id has been updated.")
-    
+
 # ホットリロード時に cog を削除する
 async def teardown(bot):
     await bot.remove_cog()
