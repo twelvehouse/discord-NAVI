@@ -32,7 +32,8 @@ class MainCog(commands.Cog):
         purge messages
         """
         try:
-            await ctx.channel.purge(limit=int(arg) + 1, check=lambda m: m.author == ctx.author)
+            # ユーザーとボットのメッセージを削除する
+            await ctx.channel.purge(limit=int(arg) + 1, check=lambda m: m.author == ctx.author or m.author.bot)
             return
         except Exception as e:
             await ctx.reply(f"Failed to purge messages. Error: {e}")
