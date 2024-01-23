@@ -68,7 +68,6 @@ class chatGPTCog(commands.Cog):
         # 送信者が BOT だった場合は無視
         if message.author.bot:
             return
-        
         # DMchannel なら無視
         if isinstance(message.channel, discord.DMChannel):
             return
@@ -78,6 +77,9 @@ class chatGPTCog(commands.Cog):
             return
         # コマンドなら無視
         if message.content.startswith(PREFIX):
+            return
+        # システムメッセージなら無視
+        if message.type == discord.MessageType.pins_add: # ピン留め
             return
         
         # 書き込み中ステータスに変更
