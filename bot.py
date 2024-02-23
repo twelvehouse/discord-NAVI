@@ -17,7 +17,8 @@ load_dotenv()
 
 INITIAL_COGS = [
     'cogs.mainCog',
-    'cogs.chatGPTCog'
+    'cogs.chatGPTCog',
+    'cogs.DeepLCog',
 ]
 
 # 設定読み込み
