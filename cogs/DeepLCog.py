@@ -80,6 +80,8 @@ class DeepLCog(commands.Cog):
             # 翻訳を生成
             try:
                 response = await self.generate_translation(message.content, self.target_lang)
+                # Discord 上でワンクリックでコピーできるよう、コードブロックにする
+                response = f"```\n{response}\n```"
                 # 2000 文字を超えていた場合は Embed で返信
                 if len(response) > 2000:
                     embed = discord.Embed(title="Response", description=response, color=0xf1c40f)
