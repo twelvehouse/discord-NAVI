@@ -11,10 +11,13 @@ class MainCog(commands.Cog):
     async def reload(self, ctx):
         """hot reload"""
         try:
+            if ctx.interaction:
+                await ctx.interaction.response.defer(thinking=True)
+
             await self.bot.reload_extensions()
-            await ctx.reply("Reloaded.")
+            await ctx.send("Reloaded.")
         except Exception as e:
-            await ctx.reply(f"Failed to reload. Error: {e}")
+            await ctx.send(f"Failed to reload. Error: {e}")
 
     # コグ表示
     @commands.hybrid_command()

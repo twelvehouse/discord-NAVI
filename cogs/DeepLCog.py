@@ -3,36 +3,16 @@ import httpx, json
 import discord 
 from discord.ext import commands
 
-import configparser
 import json
 import re
 
-# config 管理
-def read_config():
-    config = configparser.ConfigParser()
-    config.read("config/config.ini")
-    return config
-
-def write_config(config):
-    with open("config/config.ini", "w") as configfile:
-        config.write(configfile)
-
-def get_json_value(json_raw: str, key):
-    # json かどうか確認
-    if json_raw.startswith("{"):
-        dict = json.loads(json_raw)
-        return dict[key]
-    else:
-        return None
-    
-DEEPLX_API_KEY = read_config()['DEEPLX']['api_key']
-DEEPLX_CHANNEL_KEY = read_config()['DEEPLX']['channel_key']
-PREFIX = read_config()['DISCORD']['prefix']
+from config_manager import ConfigManager
 
 class DeepLCog(commands.Cog):
     # コンストラクタ
     def __init__(self, bot):
         self.bot = bot
+        self.config = ConfigManager()
     
     # 翻訳を生成する
     async def generate_translation(self, text: str, target_lang: str) -> str:
@@ -42,7 +22,7 @@ class DeepLCog(commands.Cog):
         }
 
         post_data = json.dumps(data)
-        response = httpx.post(url=DEEPLX_API_KEY, data=post_data).json().get("data")
+        response = httpx.post(url=self.config.get('DEEPLX', 'api_key'), data=post_data).json().get("data")
 
         return response
     
@@ -59,7 +39,7 @@ class DeepLCog(commands.Cog):
             return
         # DEEPLX_CHANNEL_KEY が含まれていないトピックなら無視
         topic = message.channel.topic
-        if topic is None or DEEPLX_CHANNEL_KEY not in topic:  # トピックがないか、キーが含まれていない
+        if topic is None or self.config.get('DEEPLX', 'channel_key') not in topic:  # トピックがないか、キーが含まれていない
             return
         else: # トピック内からregexで lang:XX を抽出してself.target_langに設定する
             lang_regex = re.compile(r'lang:(\w{2})')
@@ -69,7 +49,7 @@ class DeepLCog(commands.Cog):
             else:
                 self.target_lang = "JA"
         # コマンドなら無視
-        if message.content.startswith(PREFIX):
+        if message.content.startswith(self.config.get('DISCORD', 'prefix')):
             return
         # システムメッセージなら無視
         if message.type == discord.MessageType.pins_add: # ピン留め

@@ -8,8 +8,7 @@ import pytz
 import asyncio
 import psutil
 
-import configparser
-config = configparser.ConfigParser()
+from config_manager import ConfigManager
 
 # 環境変数は .env から読み込む
 from dotenv import load_dotenv
@@ -17,14 +16,11 @@ load_dotenv()
 
 INITIAL_COGS = [
     'cogs.mainCog',
-    # 'cogs.chatGPTCog',
     'cogs.DeepLCog',
+    'cogs.ReminderCog',
 ]
 
-# 設定読み込み
-config.read('config/config.ini')
-OWNER_ID = int(config['DISCORD']['owner_id'])   # DM 送信先のID
-
+config = ConfigManager()
 
 # 起動時DMのID格納用
 DM_ID = None
@@ -35,19 +31,17 @@ def jst(utc_time):
     jst_timezone = pytz.timezone('Asia/Tokyo')
     
     # JST に変換
-    utc = pytz.timezone('UTC')
-    utc_time = utc.localize(utc_time)   # UTC付与
     jst_time = utc_time.astimezone(jst_timezone)
     
     return jst_time
 
 # BOT の起動時刻を取得
-start_time = jst(datetime.datetime.utcnow())
+start_time = jst(datetime.datetime.now(datetime.timezone.utc))
 
 # BOT のかどう時間を取得
 async def get_uptime():
     # 現在の時刻を取得
-    current_time = jst(datetime.datetime.utcnow())
+    current_time = jst(datetime.datetime.now(datetime.timezone.utc))
     # 稼働時間を計算
     uptime = current_time - start_time
     # 稼働時間を整形
@@ -59,8 +53,8 @@ async def get_uptime():
 async def generate_dm_message():
     # BOTの起動時間、累計稼働時間、最後のハートビート時刻を取得
     uptime_hours = await get_uptime()
-    heartbeat_time = jst(datetime.datetime.utcnow()).strftime('%Y/%m/%d %H:%M:%S')
-
+    heartbeat_time = jst(datetime.datetime.now(datetime.timezone.utc)).strftime('%Y/%m/%d %H:%M:%S')
+    
     # ついでに招待リンクも生成
     invite_link = discord.utils.oauth_url(
         bot.user.id,
@@ -81,14 +75,14 @@ async def generate_dm_message():
 # DM 送信
 async def send_dm(bot):
     global MESSAGE_ID   # グローバル変数の使用を宣言
-    owner = await bot.fetch_user(OWNER_ID)
+    owner = await bot.fetch_user(config.get('DISCORD', 'owner_id'))
     message = await owner.send(await generate_dm_message())
     MESSAGE_ID = message.id  # 送信したメッセージのIDを格納
 
 # DM 編集
 async def edit_dm(bot):
     global MESSAGE_ID  # グローバル変数の使用を宣言
-    owner = await bot.fetch_user(OWNER_ID)
+    owner = await bot.fetch_user(config.get('DISCORD', 'owner_id'))
     while True:
         try:
             dm = await owner.create_dm()
@@ -154,10 +148,11 @@ class MyBot(commands.Bot):
         # Cog を読み込み
         for cog in INITIAL_COGS:
             try:
-                await bot.reload_extension(cog)
-            except Exception:
+                await self.reload_extension(cog)
+            except Exception as e:
+                print(f"Failed to reload {cog}: {e}")
                 traceback.print_exc()
-        await bot.tree.sync()
+        await self.tree.sync()
 
     # Bot の準備完了時
     async def on_ready(self):
@@ -181,5 +176,5 @@ class MyBot(commands.Bot):
 
 # 実行
 if __name__ == '__main__':
-    bot = MyBot(command_prefix=config['DISCORD']['prefix'])
-    bot.run(config['DISCORD']['token'])
+    bot = MyBot(command_prefix=config.get('DISCORD', 'prefix'))
+    bot.run(config.get('DISCORD', 'token'))
