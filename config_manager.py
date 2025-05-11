@@ -13,6 +13,9 @@ class ConfigManager:
 
     # セクションとキーを指定して値を設定
     def set(self, section, key, value):
+        self.config.read(self.config_file) # 再読み込み
+        if section not in self.config:
+            self.config.add_section(section)
         self.config[section][key] = value
         with open(self.config_file, 'w') as configfile:
             self.config.write(configfile)

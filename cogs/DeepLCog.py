@@ -16,15 +16,24 @@ class DeepLCog(commands.Cog):
     
     # 翻訳を生成する
     async def generate_translation(self, text: str, target_lang: str) -> str:
-        data = {
+        api_key = self.config.get('DEEPLX', 'api_key')
+        endpoint = f"https://deeplx.missuo.ru/translate?key={api_key}"
+        headers = {"Content-Type": "application/json"}
+
+        payload = {
             "text": text,
-            "target_lang": target_lang,
+            "source_lang": "auto",
+            "target_lang": target_lang.upper()
         }
 
-        post_data = json.dumps(data)
-        response = httpx.post(url=self.config.get('DEEPLX', 'api_key'), data=post_data).json().get("data")
+        try:
+            async with httpx.AsyncClient() as client:
+                res = await client.post(endpoint, json=payload, headers=headers, timeout=10.0)
+                res.raise_for_status()
+                return res.json().get("data")
+        except Exception as e:
+            raise RuntimeError(f"API通信に失敗しました: {e}")
 
-        return response
     
     # on_message イベントをリスナーに登録する
     @commands.Cog.listener()
